@@ -29,6 +29,7 @@ class EpisodesCollectionViewCell: UICollectionViewCell {
         imageTV.tintColor = .black
         
         imageHeart.image = UIImage(systemName: "heart")
+        imageHeart.tintColor = .red
         imageHeart.isUserInteractionEnabled = true
         imageHeart.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(heartTapped)))
         
