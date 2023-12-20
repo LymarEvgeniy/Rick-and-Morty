@@ -12,6 +12,7 @@ struct CharacterInfo: Codable {
     let status: String
     let species: String
     let type: String
+    let image: String
     let gender: String
     let location: Location
     
@@ -28,7 +29,4 @@ struct Episode: Codable {
     let name: String
     let episode: String
     let characters: [String]
-}
-struct ImageModel: Codable {
-    let image: String
 }

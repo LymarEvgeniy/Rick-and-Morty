@@ -16,6 +16,9 @@ class EpisodesViewController: UIViewController, UICollectionViewDelegate, UIColl
     let button = UIButton()
     let filtersImage = UIImageView()
     var collactionVeiw: UICollectionView?
+    var character = [CharacterInfo]()
+    var characterImage = [UIImage]()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +70,7 @@ class EpisodesViewController: UIViewController, UICollectionViewDelegate, UIColl
         collactionVeiw?.frame = CGRect(x: 20, y: whiteView.bounds.height-70, width: 350, height: view.bounds.height-whiteView.bounds.height)
         view.addSubview(collactionVeiw ?? UIView())
     }
+    
     func episodeRickAndMorty() {
         guard let url = URL(string: "https://rickandmortyapi.com/api/episode") else { return }
         
@@ -76,30 +80,55 @@ class EpisodesViewController: UIViewController, UICollectionViewDelegate, UIColl
             if let json = try? JSONDecoder().decode(Resalt.self, from: data) {
                 DispatchQueue.main.async {
                     self.resalt = json
+                    json.results.forEach {
+                        self.getimage(url: $0.characters.randomElement() ?? "")
+                    }
                     self.collactionVeiw?.reloadData()
                 }
             }
         }
         task.resume()
     }
-
+    
+    func getimage(url: String) {
+        guard let url = URL(string: url) else {return}
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: url) { data, response, error in
+            guard let data = data else { return }
+            let decoder = try? JSONDecoder().decode(CharacterInfo.self, from: data)
+            guard let imageUrl = URL(string: decoder?.image ?? "") else {return}
+            let taskImage = session.dataTask(with: imageUrl) { data, response, error in
+                guard let data = data,
+                      let decoder = decoder else { return }
+                DispatchQueue.main.async {
+                    self.character.append(decoder)
+                    self.characterImage.append(UIImage(data: data) ?? UIImage())
+                    self.collactionVeiw?.reloadData()
+                }
+            }
+            taskImage.resume()
+        }
+        task.resume()
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        resalt?.results.count ?? 0
+        character.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EpisodesCollectionViewCell", for: indexPath) as? EpisodesCollectionViewCell,
               let episode = resalt?.results [indexPath.row]
         else {return UICollectionViewCell()}
-        cell.configure(episode: episode)
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
+            cell.configure(episode: episode, character: self.character[indexPath.row], image: self.characterImage[indexPath.row])
+        }
         return cell
     }
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-
+        
         let characterTableView = CharacterDetailsTableViewController()
-
-        characterTableView.getCharacter(id: indexPath.row+1)
+        characterTableView.character = character[indexPath.row]
+        characterTableView.imageRickOnTheCircle.image = characterImage[indexPath.row]
         navigationController?.pushViewController(characterTableView, animated: true)
     }
-
 }

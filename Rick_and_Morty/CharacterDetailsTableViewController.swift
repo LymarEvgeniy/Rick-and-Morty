@@ -10,7 +10,7 @@ import UIKit
 class CharacterDetailsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let caracterTable = UITableView()
-    let imageRickOnTheCircle = UIImageView()
+    var imageRickOnTheCircle = UIImageView()
     let nameHero = UITextView()
     var character: CharacterInfo?
     var permission: Bool?
@@ -30,10 +30,13 @@ class CharacterDetailsTableViewController: UIViewController, UITableViewDelegate
         let backBarButton = UIBarButtonItem(customView: backButton)
         navigationItem.leftBarButtonItem = backBarButton
 
-        imageRickOnTheCircle.image = UIImage(named: "RickInCyrcle")
         imageRickOnTheCircle.frame = CGRect(x: 122, y: 120, width: 150, height: 150)
+        imageRickOnTheCircle.layer.cornerRadius = imageRickOnTheCircle.frame.size.width/2
+        imageRickOnTheCircle.clipsToBounds = true
+        imageRickOnTheCircle.layer.borderWidth = 5
+        imageRickOnTheCircle.layer.borderColor = UIColor.systemGray6.cgColor
         
-        nameHero.text = "Rick Sanchez"
+        nameHero.text = character?.name
         nameHero.textAlignment = .center
         nameHero.font = .boldSystemFont(ofSize: 30)
         nameHero.frame = CGRect(x: 0, y: 290, width: view.frame.width , height: 45)
@@ -56,22 +59,6 @@ class CharacterDetailsTableViewController: UIViewController, UITableViewDelegate
         caracterTable.dataSource = self
         
         view.addSubview(caracterTable)
-    }
-    
-    func getCharacter(id: Int) {
-        guard let url = URL(string: "https://rickandmortyapi.com/api/character/\(id)") else { return }
-        let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url) { data, response, error in
-            guard let data = data else {return}
-            if let json = try? JSONDecoder().decode(CharacterInfo.self, from: data) {
-                DispatchQueue.main.async {
-                    self.character = json
-                    self.nameHero.text = json.name
-                    self.caracterTable.reloadData()
-                }
-            }
-        }
-        task.resume()
     }
     
     @objc func loadPhoto() {

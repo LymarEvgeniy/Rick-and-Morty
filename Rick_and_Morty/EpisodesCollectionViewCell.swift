@@ -73,26 +73,10 @@ class EpisodesCollectionViewCell: UICollectionViewCell {
             imageHeart.image = UIImage(systemName: "heart")
         }
     }
-    func configure(episode: Episode) {
+    func configure(episode: Episode, character: CharacterInfo, image: UIImage) {
         nameLabel.text = "\(episode.name)  |  \(episode.episode)"
-        getimage(url: episode.characters.randomElement() ?? "")
-    }
-    
-    func getimage(url: String) {
-        guard let url = URL(string: url) else {return}
-        let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url) { data, response, error in
-            guard let data = data else { return }
-            let decoder = try? JSONDecoder().decode(ImageModel.self, from: data)
-            guard let imageUrl = URL(string: decoder?.image ?? "") else {return}
-         let taskImage = session.dataTask(with: imageUrl) { data, response, error in
-                guard let data = data else { return }
-                DispatchQueue.main.async {
-                    self.myImageVeiw.image = UIImage(data: data)
-                }
-            }
-            taskImage.resume()
-        }
-        task.resume()
+        rickLabel.text = character.name
+        myImageVeiw.image = image
+
     }
 }
